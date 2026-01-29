@@ -5,6 +5,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Task Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body class = "bg-dark">
 <div class="container mt-5 border border-light">
@@ -26,8 +27,11 @@
 
     {{-- Add Task --}}
     <a href="{{ route('tasks.create') }}" class="btn btn-success mb-3">Add Task</a>
-    <button type = "button" id = "clearBtn" class = "btn btn-secondary mb-3">Clear</button>
-    {{-- Task Table --}}
+    <button type = "button" id = "clearBtn" class = "btn btn-secondary mb-3" style = "display: none;">Clear</button>
+    <button type="button" id="resetBtn" class="btn btn-danger mb-3">
+        <i class="bi bi-arrow-clockwise"></i>
+    </button>
+        {{-- Task Table --}}
     <table class="table table-borderless table-hover table-striped table-dark">
         <thead>
             <tr>
@@ -92,7 +96,30 @@
     document.querySelectorAll(".delBtn").forEach(button=>{
         button.addEventListener('click',function(){
             const taskId = this.dataset.id;
+            if(confirm('Are you sure you want to delete this task?')) {
+                fetch(`/tasks/${taskId}`,{
+                    method:'DELETE',
+                    headers:{
+                        'X-CSRF-TOKEN':csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res=>res.json())
+                .then(data=>{
+                    if(data.success){
+                        this.closest('tr').remove();
+                    }
+                    else{
+                        alert(data.message);
+                    }
+                })
+                .catch(error=>console.log(error));  
+            }
         });
+    });
+    $("#resetBtn").click(()=>{
+        window.location.reload();   
     });
 })();
 
